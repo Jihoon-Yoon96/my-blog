@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import { Menu, Folder, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -126,42 +127,44 @@ const SidebarContent = () => (
 
 // 메인 카드 (게시글)
 const PostCard = ({ post }: { post: any }) => (
-    <Card className="group flex flex-col overflow-hidden border border-border/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer">
-      {/* 썸네일 영역 */}
-      <div className={`h-40 w-full ${post.thumbnailColor} relative overflow-hidden`}>
-        {/* 시리즈 뱃지 */}
-        {post.series && (
-            <Badge variant="secondary" className="absolute top-3 left-3 bg-black/50 text-white hover:bg-black/70 border-none backdrop-blur-sm">
-              SERIES : {post.series}
-            </Badge>
-        )}
-      </div>
+    <Link href={`/posts/${post.id}`} className="block h-full">
 
-      <CardHeader className="p-4 pb-2">
-        <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-muted-foreground flex items-center">
-          <Calendar className="w-3 h-3 mr-1" /> {post.date}
-        </span>
-        </div>
-        <h3 className="line-clamp-2 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
-          {post.title}
-        </h3>
-      </CardHeader>
+        <Card className="group flex flex-col h-full overflow-hidden border border-border/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+            {/* 썸네일 영역 */}
+            <div className={`h-40 w-full ${post.thumbnailColor} relative overflow-hidden`}>
+                {post.series && (
+                    <Badge variant="secondary" className="absolute top-3 left-3 bg-black/50 text-white hover:bg-black/70 border-none backdrop-blur-sm">
+                        SERIES : {post.series}
+                    </Badge>
+                )}
+            </div>
 
-      <CardContent className="p-4 pt-0 flex-1">
-        <p className="line-clamp-2 text-sm text-muted-foreground">
-          {post.description}
-        </p>
-      </CardContent>
+            <CardHeader className="p-4 pb-2">
+                <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-muted-foreground flex items-center">
+            <Calendar className="w-3 h-3 mr-1" /> {post.date}
+          </span>
+                </div>
+                <h3 className="line-clamp-2 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
+                    {post.title}
+                </h3>
+            </CardHeader>
 
-      <CardFooter className="p-4 pt-0 flex flex-wrap gap-2 pb-4">
-        {post.tags.map((tag: string) => (
-            <Badge key={tag} variant="outline" className="text-xs font-normal">
-              #{tag}
-            </Badge>
-        ))}
-      </CardFooter>
-    </Card>
+            <CardContent className="p-4 pt-0 flex-1">
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                    {post.description}
+                </p>
+            </CardContent>
+
+            <CardFooter className="p-4 pt-0 flex flex-wrap gap-2 pb-4">
+                {post.tags.map((tag: string) => (
+                    <Badge key={tag} variant="outline" className="text-xs font-normal">
+                        #{tag}
+                    </Badge>
+                ))}
+            </CardFooter>
+        </Card>
+    </Link>
 )
 
 
