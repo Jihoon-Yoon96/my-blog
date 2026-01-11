@@ -57,10 +57,10 @@ const Header = () => (
         {/* 로고 */}
         <div className="mr-4 hidden md:flex">
           <a className="mr-6 flex items-center space-x-2 font-bold text-lg tracking-tight" href="/">
-            <span>Jihun.Dev</span>
+            <span>zing_hun.Dev</span>
           </a>
         </div>
-        <div className="md:hidden font-bold flex-1 text-center md:text-left">Jihun.Dev</div>
+        <div className="md:hidden font-bold flex-1 text-center md:text-left">zing_hun.Dev</div>
 
         {/* 우측 아이콘들 */}
         <div className="flex items-center space-x-2">
