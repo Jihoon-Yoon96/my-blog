@@ -14,7 +14,7 @@ const posts = defineCollection({
         content: s.mdx(), // 본문 MDX
     }).transform(data => ({
         ...data,
-        permalink: `/posts/${data.slug}`,
+        permalink: `/${data.slug}`,
     }))
 })
 
