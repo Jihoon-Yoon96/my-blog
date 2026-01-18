@@ -1,8 +1,32 @@
 import type { Metadata } from "next";
-import { Header } from "@/components/layout/Header"; // ✨ 추가
+import { Header } from "@/components/layout/Header";
+import { SearchModal } from "@/components/layout/SearchModal";
+// import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-// ... (폰트, 메타데이터 설정 유지)
+
+const geistSans = Geist({
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+    title: {
+        template: '%s | Jihun.Dev',
+        default: 'Jihun.Dev - Tech Blog',
+    },
+    description: '프론트엔드 개발자 윤지훈의 기술 블로그입니다.',
+    icons: {
+        icon: '/favicon.ico',
+    },
+};
 
 export default function RootLayout({
                                        children,
@@ -10,10 +34,20 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-        <body className="...">
-        <Header />  {/* ✨ 여기에 배치하면 모든 페이지에 뜹니다 */}
-        {children}
+        <html lang="ko" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <NextThemesProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <Header />
+            {children}
+
+            {/* 여기에 나중에 <SearchModal /> 을 추가할 예정입니다 */}
+            <SearchModal />
+        </NextThemesProvider>
         </body>
         </html>
     );

@@ -2,13 +2,16 @@
 
 import React from "react"
 import Link from "next/link"
-import { Menu, Search } from "lucide-react" // 아이콘 확인 필요
+import { Menu, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Sidebar } from "@/components/layout/Sidebar" // 아래에서 만들 예정
+import { Sidebar } from "@/components/layout/Sidebar"
+import { useSearchStore } from "@/lib/store"
 
 export function Header() {
+    const { onOpen } = useSearchStore()
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4 mx-auto">
@@ -45,14 +48,14 @@ export function Header() {
                 {/* 우측 아이콘들 */}
                 <div className="flex items-center space-x-2">
                     {/* 검색 버튼 UI */}
-                    <Button variant="outline" size="sm" className="h-9 w-full justify-start text-muted-foreground sm:w-64 sm:pr-12 lg:w-80 hidden md:inline-flex">
+                    <Button variant="outline" size="sm" className="h-9 w-full justify-start text-muted-foreground sm:w-64 sm:pr-12 lg:w-80 hidden md:inline-flex" onClick={onOpen}>
                         <span className="hidden lg:inline-flex">Search posts...</span>
                         <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                             <span className="text-xs">⌘</span>K
                         </kbd>
                     </Button>
 
-                    <Button variant="ghost" size="icon" className="md:hidden">
+                    <Button variant="ghost" size="icon" className="md:hidden" onClick={onOpen}>
                         <Search className="h-5 w-5" />
                     </Button>
 
