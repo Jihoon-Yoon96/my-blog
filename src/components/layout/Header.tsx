@@ -60,7 +60,7 @@ export function Header() {
                     </Button>
 
                     <Avatar className="h-8 w-8 ml-2 cursor-pointer">
-                        <AvatarImage src="/profile.png" alt="Profile" />
+                        <AvatarImage src="/seol.png" alt="Profile" />
                         <AvatarFallback>JH</AvatarFallback>
                     </Avatar>
                 </div>

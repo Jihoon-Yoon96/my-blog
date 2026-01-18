@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils" // 스타일 병합용 유틸
 // 임시 데이터 (나중에 Props로 받거나 Store에서 가져옴)
 const CATEGORIES = [
     { id: "all", name: "전체 보기", count: 12 },
-    { id: "dev", name: "개발 일지", count: 5 },
-    { id: "nextjs", name: "Next.js 딥다이브", count: 3 },
-    { id: "react", name: "React 까보기", count: 4 },
+    { id: "dev", name: "아직", count: 5 },
+    { id: "nextjs", name: "사이드바는", count: 3 },
+    { id: "react", name: "개발안됨", count: 4 },
 ]
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
