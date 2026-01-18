@@ -1,0 +1,188 @@
+---
+title: 기술블로그 만들기 - 1. 구조잡기
+date: 2026-01-18
+description: 나만의 FE 기술 블로그 만들기 02
+series: 블로그만들기
+thumbnail: /thumbnail/03image-hooni.png
+tags: ["블로그만들기", "나름괜찮"]
+---
+![](/thumbnail/03image-hooni.png)
+# 시작이 반이다...!
+
+지난번에 세웠던 계획들을 바탕으로 꾸역꾸역 블로그를 만들어보기 시작했다..
+1월들어 회사에서 야근을 안한적이 없어서 진도가 많이 느리지만(진짜 핑계 아님 ㅠ..), "시작이 반"이라는 마인드로 없는 시간 쪼개서 만들어보긴 했다. 근데 나름 블로그처럼 보이기는 하는듯..?
+
+---
+# 1. 디자인/퍼블리싱
+퍼블리싱은 내가 뭐 할 수 있는게 없어서 AI에게 전적으로 의존하기로 마음먹었다! ㅎㅎ
+그래도 어떤 디자인을 원하는지, 참고해야할지 정도는 스스로 찾아보기로 했다.
+
+일단 전반적으로 velog의 디자인을 많이 참조시켰고, Next.js로 만들어진 블로그 사례들을 찾아보다가 아래의 블로그 페이지를 보게 되었는데, 왼쪽 LNB만 없을 뿐 내가 원하던 디자인 그 자체여서 주저없이 손민수하기로 했다. 비교해서 보면 은근 비슷한것 같기도..?
+https://tx.shadcn.com/blog
+
+### 참고한 블로그 - 목록 페이지
+![](https://velog.velcdn.com/images/heewoong96/post/b5a656c0-00dc-499c-b122-9d3b8dfc9abb/image.png)
+
+
+### 참고한 블로그 - 상세 페이지
+![](https://velog.velcdn.com/images/heewoong96/post/cb2cdbf4-2fed-47b4-ab8d-dd84f93f19ff/image.png)
+
+---
+
+# 2. 구조잡기
+
+## 프로젝트 구조
+```
+my-blog
+├── .velite/                 # (자동생성) Velite가 빌드한 콘텐츠 데이터와 타입 정의 파일들
+├── content/                 # 블로그 글 관리 위치(.mdx)
+│   └── posts/
+│       └── hello-world.mdx
+├── src/
+│   ├── app/
+│   │   ├── posts/
+│   │   │   └── [slug]/
+│   │   │       └── page.tsx # 블로그글 상세 페이지 (.mdx 렌더링)
+│   │   ├── layout.tsx       # 공통 레이아웃 (헤더, 다크모드, 폰트 등)
+│   │   └── page.tsx         # 메인 홈 (게시글 목록)
+│   ├── components/
+│   │   ├── layout/			 # GNB 헤더, 사이드바, 검색 모달 등
+│   │   ├── post/			 # 게시글 카드 컴포넌트
+│   │   └── ui/              # shadcn/ui 컴포넌트 (Button, Card, Command 등)
+│   └── lib/
+│       ├── store.ts         # Zustand 상태 관리 (모달 관리)
+├── components.json          # shadcn 설정
+├── next.config.ts
+├── package.json             # 스크립트 및 의존성
+├── tsconfig.json            # 경로 별칭 설정 (#site/content -> .velite)
+└── velite.config.ts         # Velite 환경설정(콘텐츠 스키마 등)
+```
+
+## Velite 환경 설정 (velite.config.ts)
+CMS를 따로 도입하지 않고 mdx파일을 통해 직접 배포하며 관리해야하는 시스템이어서 환경세팅하는 것이 중요한 것 같다. 그래서 컨텐츠관리를 위해 도입하기로 한 `velite` 환경설정하는 데에 많은 자료를 찾아봤다.
+
+posts 컬렉션을 정의하여 content/posts/**/*.mdx 경로의 파일들을 스캔합니다.
+
+```typescript
+import { defineCollection, defineConfig, s } from 'velite'
+
+// 블로그 글 스키마 정의
+const posts = defineCollection({
+    name: 'Post',
+    pattern: 'posts/**/*.mdx', // content/posts 폴더 안의 mdx 파일을 찾음
+    schema: s.object({
+        slug: s.path(), // 파일 경로가 URL이 됨
+        title: s.string().max(99),
+        date: s.string(),
+        description: s.string(),
+        tags: s.array(s.string()),
+        series: s.string().optional(), // 시리즈는 없을 수도 있음
+        thumbnail: s.string().optional(), // 썸네일은 없을 수도 있음
+        content: s.mdx(), // 본문 MDX
+    }).transform(data => ({
+        ...data,
+        link: `/${data.slug}`,
+    }))
+})
+
+...
+```
+
+제목(title), 날짜(date), 설명(description), 태그(tags), 시리즈(series, 옵션), 썸네일(thumbnail, 옵션), 본문(content) 등의 메타데이터 구조를 잡았고, 컨텐츠 링크 데이터를 위해(link) transform API를 활용했다.
+
+```
+---
+title: 첫 번째 블로그 글
+date: 2024-01-01
+description: Vercel 배포 테스트
+tags: ["Test", "Vercel"]
+thumbnail: /images/thumbnail.png
+---
+
+# 안녕하세요!
+여기에 본문 내용을 작성합니다.
+```
+위에서 설정한 메타데이터 구조를 토대로, mdx파일에서는 위와 같이 메타데이터를 정의해주면 된다.
+
+## 데이터 갱신 및 실행 (package.json)
+
+```json
+{
+...
+   "scripts": {
+    "dev": "velite --watch & next dev",
+    "build": "velite && next build",
+    ...
+  }
+...
+}
+```
+
+개발 서버 실행 시 Velite가 감시 모드로 함께 실행되어 MDX 파일이 변경될 때마다 `.velite` 폴더의 데이터를 실시간으로 갱신될 수 있게 설정해주었고(velite --watch & next dev),
+배포 시 Velite가 먼저 실행되어 정적 데이터를 생성한 후 Next.js 빌드가 진행되도록 설정했다.(velite && next build)
+
+요약하자면 아래와 같다.
+
+`/content/posts` 하위에 블로그 글 작성(.mdx)
+→ dev 또는 build 실행 시 `velite.config.ts` 설정에 따라 Velite가 `.velite/posts.json` 데이터 자동 생성(경로 변환 등)
+→ 생성된 JSON 데이터를 활용하여 목록/상세 페이지 렌더링 및 Fuse.js 기반 검색 기능 동작
+
+---
+
+# 3. 검색 구현
+## 상태 관리 (Zustand)
+
+```typescript
+// src/lib/store.ts
+import { create } from 'zustand'
+
+interface SearchState {
+    isOpen: boolean
+    onOpen: () => void
+    onClose: () => void
+    toggle: () => void
+}
+
+export const useSearchStore = create<SearchState>((set) => ({
+    isOpen: false,
+    onOpen: () => set({ isOpen: true }),
+    onClose: () => set({ isOpen: false }),
+    toggle: () => set((state) => ({ isOpen: !state.isOpen })),
+}))
+```
+`zustand`를 통해 모달의 열림/닫힘 상태(isOpen)와 제어 함수(onOpen, onClose, toggle)를 전역에서 사용할 수 있게 했다.
+
+
+## 검색 로직 (Fuse.js + Velite)
+
+```tsx
+import { posts } from "#site/content" // Velite가 생성한 데이터
+import Fuse from "fuse.js"
+
+export function SearchModal() {
+    ...
+
+    // 1. Fuse.js 설정 (제목, 설명, 태그로 검색)
+    const fuse = React.useMemo(() => {
+        return new Fuse(posts, {
+            keys: ['title', 'description', 'tags'],
+            threshold: 0.3, // 정확도 (0에 가까울수록 엄격함)
+        })
+    }, [])
+
+  	// 2. 검색 결과 필터링
+  	const [query, setQuery] = React.useState("")
+
+    const results = React.useMemo(() => {
+        if (!query) return posts.slice(0, 5) // 검색어 없으면 최신글 5개 노출
+        return fuse.search(query).map(result => result.item)
+    }, [query, fuse])
+    ...
+}
+```
+`src/components/layout/SearchModal.tsx`에서 Velite로 생성된 전체 글 데이터(post.json)를 import하고, Fuse.js 설정을 통해 제목/설명/태그 등의 검색 키워드들을 지정하여 검색 정확도(threshold)를 0.3로 설정하여 약간의 오타가 있어도 검색되도록 구현했다. (0.0 ~ 1.0까지 설정 가능하고, 낮을 수록 높은 정확도를 요구함)
+
+---
+
+시간을 쪼개고 쪼개서 겨우 한것 치고는 나름 만족(?)스러운 것 같다.
+그래도 사이드바 UI나 댓글 기능 등 구현 못한게 많으니, 다음엔 더 많이 구현해보자~~

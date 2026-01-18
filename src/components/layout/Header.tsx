@@ -50,9 +50,9 @@ export function Header() {
                     {/* 검색 버튼 UI */}
                     <Button variant="outline" size="sm" className="h-9 w-full justify-start text-muted-foreground sm:w-64 sm:pr-12 lg:w-80 hidden md:inline-flex" onClick={onOpen}>
                         <span className="hidden lg:inline-flex">Search posts...</span>
-                        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                            <span className="text-xs">⌘</span>K
-                        </kbd>
+                        {/*<kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">*/}
+                        {/*    <span className="text-xs">⌘</span>K*/}
+                        {/*</kbd>*/}
                     </Button>
 
                     <Button variant="ghost" size="icon" className="md:hidden" onClick={onOpen}>
