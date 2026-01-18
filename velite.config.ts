@@ -11,6 +11,7 @@ const posts = defineCollection({
         description: s.string(),
         tags: s.array(s.string()),
         series: s.string().optional(), // 시리즈는 없을 수도 있음
+        thumbnail: s.string().optional(), // 썸네일은 없을 수도 있음
         content: s.mdx(), // 본문 MDX
     }).transform(data => ({
         ...data,

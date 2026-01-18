@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Calendar } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -14,10 +15,25 @@ export function PostCard({ post }: PostCardProps) {
         <Link href={post.permalink} className="block h-full">
             <Card className="group flex flex-col h-full overflow-hidden border border-border/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer">
 
-                {/* 2. 썸네일 영역 (Velite 데이터에 색상이 없으므로 임시로 처리하거나 스키마에 추가 필요) */}
-                <div className="h-40 w-full bg-gradient-to-br from-violet-500 to-purple-900 relative overflow-hidden">
+                {/* 썸네일 영역 */}
+                <div className="relative h-40 w-full overflow-hidden bg-muted">
+                    {post.thumbnail ? (
+                        // 썸네일이 있을 때: Next.js Image 사용
+                        <Image
+                            src={post.thumbnail}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                    ) : (
+                        // 썸네일이 없을 때: 기본 그라데이션 배경
+                        <div className="h-full w-full bg-gradient-to-br from-violet-500 to-purple-900" />
+                    )}
+
+                    {/* 시리즈 뱃지 (이미지 위에 겹쳐서 표시) */}
                     {post.series && (
-                        <Badge variant="secondary" className="absolute top-3 left-3 bg-black/50 text-white hover:bg-black/70 border-none backdrop-blur-sm">
+                        <Badge variant="secondary" className="absolute top-3 left-3 bg-black/50 text-white hover:bg-black/70 border-none backdrop-blur-sm z-10">
                             SERIES : {post.series}
                         </Badge>
                     )}
