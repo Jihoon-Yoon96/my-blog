@@ -1,0 +1,100 @@
+---
+title: 본부 홈페이지 개선 작업 - Lighthouse 점수 올리기
+date: 2026-02-22
+description: 서비스 성능개선 경험
+thumbnail: /thumbnail/05image-lighthouse.png
+tags: ["FE", "Lighthouse", "성능개선"]
+---
+
+기존에는 본사 홈페이지 한 곳에서 여러 본부들에 대한 소개 페이지로 구성돼있었는데, 지난 개편 작업에서 내가 속한 본부의 홈페이지가 별개의 도메인으로 독립하게 되었다. 나는 타 프로젝트에 파견 중인 상태여서 본부 홈페이지 개발 과정엔 참여할 수 없었으나 결과물에 대한 테스트 작업에 참여하였고, 그 과정에서 Lighthouse를 참고한 경험을 공유해보고자 한다.
+
+---
+# Lighthouse란?
+Lighthouse는 웹페이지 품질을 개선하는 데 도움이 되는 오픈소스 자동화 도구이다. 간단하게 말해서 "내 사이트가 얼마나 빠르고 건강한지에 대한 성적표" 정도로 이해하면 된다. Lighthouse가 평가하는 항목들은 아래와 같다.
+- **Performance** (성능): 화면이 얼마나 빨리 뜨는가? (사용자가 느끼는 속도)
+- **Accessibility** (접근성): 장애인이나 고령자도 이용하기 편한가?
+- **Best Practices** (권장사항): 웹 표준과 보안 가이드를 잘 지켰는가?
+- **SEO** (검색엔진 최적화): 구글 검색 결과 상단에 노출되기 유리한가?
+- **PWA** (Progressive Web App): 앱처럼 설치 가능하고 오프라인에서도 돌아가는가?
+
+---
+# Lighthouse 점수를 챙겨야 하는 이유?
+### 1. 검색결과의 상위 노출
+구글은 "빠르고 사용하기 좋은 사이트"를 선호한다. 그래서 Lighthouse 점수(특히 Performance와 SEO)가 높으면 구글 검색 결과 페이지에서 더 높은 순위에 오를 확률이 커진다고 하니, 제공하는 서비스의 접근성을 높이기 위해서 단순히 SEO에만 신경쓰는 것이 아니라 성능 및 권장사항 등을 전반적으로 고려한 Lighthouse 점수도 같이 고려해주는 것이 더 적절할 것이다.
+
+### 2. 이탈률 감소
+구글이 보고한 통계자료에 따르면, 페이지 로딩이 3초만 넘어가도 절반 이상의 사용자가 창을 닫는다고 한다. "긴 로딩시간"은 곧 "사이트가 느리거나 불편하다"를 의미하는 것이므로, Lightghouse 점수를 올리는 것이 곧 고객을 붙잡는 일이 될 수 있다.
+
+### 3. 테스트 도구
+Lighthouse를 실행해보면 "이미지 용량을 줄여라", "사용하지 않는 자바스크립트를 제거해라" 등과 같은 구체적인 가이드를 제시한다. 단순히 성능 측정 결과만 제공하는 것이 아니라, 이에 대한 해결책도 같이 제공한다는 점에서 개발자들에겐 일종의 "테스트 도구"의 역할한다고 볼 수 있다. 단위/통합/E2E 테스트에서는 시나리오에 입각한 성능들에 대한 테스트를 진행하고, Lighthouse에선 배포 전에 잡지 못한 LCP(로딩속도), SEO, 접근성 등의 UX 및 서비스 성능 등 항목들을 검사할 수 있을 것이다.
+
+---
+# 본부 홈페이지 활용 사례
+### 분석 결과
+
+![](/lighthouse01.png)
+
+본부 홈페이지에 대한 Lighthouse 점수이다. Performance(성능)에 대한 개선이 매우 시급하다는 것을 단번에 알아차릴 수 있었다...! 특히 Largest Contentful Paint(LCP - 최대 컨텐츠 렌더링 시간)이 8.7초나 되는데, 위에서 언급한 구글 통계자료 기준치보다 5.7초나 늦게 렌더링 되고 있는 심각한 상태임을 알게 되었다..
+
+![](/lighthouse02.png)
+
+### 해결책
+LCP에 대한 세부 항목들인데, Load Time이 7.4초나 걸리고 있었다. Lighthouse가 표기해준 `section.hero`부분을 보면 아래와 같다.
+
+``` javascript
+<section class="hero" :style="{ backgroundImage: heroBackground }">
+  ...
+</section>
+
+...
+
+const config = useRuntimeConfig();
+const imgUrl = config.public.cubeImgUrl;
+
+const heroBackground = computed(() => {
+  const filePath = keyVisual.value?.image?.[0]?.filePath;
+  const gradient = 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4))';
+  return filePath ? `${gradient}, url(${imgUrl}${filePath})` : gradient;
+});
+```
+### 원인 1) 이미지 파일 형식
+backgroundImage로 쓰이는 `heroBackground`가 실제로 .png 파일을 받아오고 있었다. 이는 .webp 파일로 교체해주어 용량을 많이 덜어내었다.
+
+### 원인 2) 이미지의 랜더링 순위
+브라우저는 HTML을 다 읽고 JS를 실행하기 때문에, `heroBackground` 로직 계산이 끝날 때까지 이미지의 존재를 모를 것이다(HTML → CSS → JS 순으로 실행 / 이미지는 우선순위가 매우 낮음).
+그래서, 위처럼 스크립트로 호출하는 구조에서는 브라우저가 CSS를 해석하고 나서야 "아, 이미지가 필요하네?"라고 인식할 것이다. 그래서 `preload` 옵션을 부여하여 우선 순위를 높여주었다.
+
+### 원인 3) backgroundImage 옵션
+추가로 찾아본 바에 의하면, background-image 대신 `<picture>` 태그나 `<img>` 태그를 사용해야 Lighthouse 점수가 올라간다고 한다. `<img>` 태그는 `fetchpriority="high"` 속성을 줄 수 있고(LCP 요소임을 브라우저에 명시하여 우선적으로 렌더링하게 됨), 브라우저의 이미지 로딩 최적화 알고리즘이 훨씬 더 공격적으로 작동한다고 한다.
+
+
+### 최종 결과
+``` javascript
+<section class="hero">
+    <NuxtImg
+      v-if="heroBackground"
+      :src="heroBackground"
+      alt="메인 키 비주얼 이미지"
+      class="hero-background-image"
+      preload
+      fetchpriority="high"
+      sizes="100vw"
+    />
+  	...
+</section>
+
+...
+
+```
+첫 번쨰 원인은 위에서 언급한대로 .webp 형식의 파일로 교체해주어 용량을 1/3가량 덜어내었고,
+두 번째와 세 번째 원인을 해결하기 위해 `<NuxtImg>`를 활용하여 `preload`옵션과 `<img>` 및 `fetchpriority="high"`옵션을 활용해주었다. `<NuxtImg>`와 `preload`옵션을 같이 쓰면 Nuxt단에서 HTML `<head>`에 `<link rel="preload">` 태그를 삽입해주어 브라우저가 JS를 실행하기 전부터 이미지 다운로드를 시작하게 된다고 하여 활용해보았다.
+
+![](/lighthouse03.png)
+
+그 결과로 65점 -> 90점으로 비약적인 성능 향상을 이뤄낼 수 있었다.
+
+---
+
+# 마치며
+
+평소에는 개발자도구 탭에 있는 Lighthouse가 뭐지 싶었는데, 이렇게 직접 테스트 도구로 활용하여 UX와 서비스 성능을 개선해본 경험을 해보았다. 이번엔 단순 1회성으로 사용해보았지만,  CI로 활용하여 성능 점검을 해도 좋겠다는 생각이 마구마구 들었다. (파견 종료 후에 해봐야겠다..!)
