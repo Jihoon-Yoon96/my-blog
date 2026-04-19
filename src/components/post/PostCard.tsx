@@ -10,7 +10,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
-    console.log(post)
+    // console.log(post)
     return (
         <Link href={post.permalink} className="block h-full">
             <Card className="group flex flex-col h-full overflow-hidden border border-border/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer">
