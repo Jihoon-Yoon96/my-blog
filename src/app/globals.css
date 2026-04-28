@@ -117,12 +117,29 @@
 }
 
 @layer base {
-  /* 코드 블록 (pre) 기본 스타일 - 맨 끝에 있던 !important 제거 */
+  /* 코드 블록 (pre) 공통 스타일 */
   .prose pre {
-    @apply p-4 rounded-xl overflow-x-auto border border-border/50 !bg-[var(--shiki-default-bg)];
+    @apply p-4 rounded-xl overflow-x-auto border border-border/50;
+    /* 라이트 모드 배경색 */
+    background-color: var(--shiki-light-bg);
   }
 
-  /* 코드 블록 내부의 텍스트 폰트 설정 */
+  /* 다크 모드일 때 코드 블록 배경색 */
+  .dark .prose pre {
+    background-color: var(--shiki-dark-bg);
+  }
+
+  /* 라이트 모드 코드 텍스트 색상 */
+  .prose pre code span {
+    color: var(--shiki-light);
+  }
+
+  /* 다크 모드 코드 텍스트 색상 */
+  .dark .prose pre code span {
+    color: var(--shiki-dark);
+  }
+
+  /* 코드 블록 폰트 설정 */
   .prose code {
     @apply text-sm font-mono leading-relaxed bg-transparent p-0;
   }
@@ -132,7 +149,7 @@
     @apply bg-muted text-primary px-1.5 py-0.5 rounded-md text-sm;
   }
 
-  /* 인라인 코드 앞뒤로 생기는 기본 backtick 문자 제거 */
+  /* 인라인 코드 앞뒤 기본 백틱 문자 제거 */
   .prose :not(pre) > code::before,
   .prose :not(pre) > code::after {
     content: "";

@@ -36,7 +36,11 @@ export default defineConfig({
             [
                 rehypePrettyCode,
                 {
-                    theme: 'github-dark', // 원하는 VS Code 테마를 지정 ('github-dark', 'one-dark-pro', 'dracula', 'material-theme' 등)
+                    // 원하는 VS Code 테마를 지정 ('github-dark', 'one-dark-pro', 'dracula', 'material-theme' 등)
+                    theme: {
+                        light: 'material-theme',
+                        dark: 'github-dark',
+                    },
                 }
             ]
         ],
