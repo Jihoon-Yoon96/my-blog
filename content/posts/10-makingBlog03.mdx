@@ -1,0 +1,140 @@
+---
+title: 기술블로그 만들기 - 디테일 챙기기 (코드블럭, 다크모드, 목차, 댓글)
+date: 2026-04-30
+description: 나만의 FE 기술 블로그 만들기 03 - 뼈대 위에 살 붙이기
+series: 블로그만들기
+thumbnail: /thumbnail/03image-hooni.png
+tags: ["블로그만들기", "Next.js", "Velite", "Giscus", "TOC"]
+---
+
+# 뼈대 완성, 이제는 '진짜' 블로그처럼 만들 차례!
+
+[지난 포스팅](/posts/03-makingBlog02)에서 Next.js와 Velite를 활용해 블로그의 전체적인 구조를 잡고 검색 기능까지 구현했다.
+뼈대는 어느 정도 갖춰졌으니, 이제 기술 블로그의 '꽃'이라고 할 수 있는 필수 디테일 요소들을 추가해 볼 차례다.
+
+이번 목표는 명확했다.
+1. 개발 블로그답게 **예쁜 코드 블록** 만들기
+2. 트렌디한 **다크모드** 토글 버튼 추가
+3. 긴 글도 읽기 쉽게 도와주는 **목차(TOC) 스크롤 스파이** 구현
+4. DB 없이 깃허브로 연동하는 **댓글(Giscus)** 달기
+
+---
+
+## 1. 코드 블록 하이라이팅 (rehype-pretty-code)
+
+기술 블로그인데 코드가 까만 배경에 흰 글씨로만 나온다면 얼마나 밋밋할까? VS Code에서 보는 것처럼 알록달록한 신택스 하이라이팅을 위해 가장 많이 쓰이는 `rehype-pretty-code`를 도입했다.
+
+```bash
+npm install rehype-pretty-code shiki
+```
+
+단순히 테마 하나만 적용하는 걸 넘어서, 라이트모드와 다크모드일 때 각각 다른 테마가 보이도록 듀얼 테마를 설정했다.
+(velite.config.ts 파일에서 rehype 플러그인 배열에 추가해 주면 된다.)
+
+```typescript
+// velite.config.ts
+rehypePlugins: [
+    [
+        rehypePrettyCode,
+        {
+            theme: {
+                light: 'github-light-high-contrast',
+                dark: 'one-dark-pro',
+            },
+        }
+    ]
+]
+```
+
+이후 `globals.css`에 CSS 변수(`--shiki-light-bg`, `--shiki-dark-bg`)를 교차 적용하도록 약간의 스타일 보정을 거치니, 에디터 부럽지 않은 깔끔한 코드 블록이 완성되었다.
+
+
+## 2. 다크모드 플로팅 버튼 추가
+요즘 웹사이트에 다크모드가 없으면 섭섭하다. 이미 세팅해 둔 `next-themes`를 활용해 우측 하단에 동동 플로팅 토글 버튼을 만들었다.
+
+Next.js 환경에서는 서버와 클라이언트의 테마 상태 불일치(Hydration Mismatch) 에러가 발생할 수 있기 때문에, `useEffect`를 사용해 mounted 상태일 때만 렌더링되도록 처리하는 것이 핵심이었다.
+
+```typescript
+// ThemeToggle.tsx의 일부
+const [mounted, setMounted] = React.useState(false)
+
+React.useEffect(() => {
+    setMounted(true)
+}, [])
+
+if (!mounted) return null
+
+// 이후 <Button> 렌더링...
+```
+
+# 3. 목차 (Table of Contents)와 Scroll Spy 구현
+글이 길어질수록 현재 내가 어디쯤 읽고 있는지 알려주는 내비게이션 역할이 필수적이다.
+`Velite`는 기본적으로 본문에서 TOC 데이터를 추출해 주는 기능(`s.toc()`)을 제공한다. 하지만 클릭 시 해당 섹션으로 이동하려면 제목 태그(`<h1>`, `<h2>`)에 고유한 id가 있어야 하므로 `rehype-slug` 플러그인을 추가로 연동했다.
+
+## 🚨 Vercel 빌드 에러 트러블 슈팅
+
+로컬에서는 잘 돌아갔는데, Vercel에 배포하려고 하니 `Property 'depth' is missing in type...` 이라는 타입 에러와 함께 빌드가 터져버렸다!
+
+원인을 분석해 보니, 내가 정의한 TOC 타입은 1차원 배열이었는데, **Velite가 생성한 실제 데이터는 하위 목차를 items 배열로 묶어서 반환하는 '중첩 트리(Nested Tree)' 구조**였기 때문이다.
+
+이를 해결하기 위해 재귀 함수를 활용하여 컴포넌트를 리팩토링했다.
+
+```typescript jsx
+interface TocEntry {
+    title: string
+    url: string
+    items?: TocEntry[] // ✨ 핵심: 하위 목차 처리
+}
+
+// 재귀적으로 목차를 그려주는 함수
+const renderTocItems = (items: TocEntry[], depth = 1) => {
+    return items.map((item, index) => {
+        // ... isActive 로직
+        return (
+            <div key={`${item.url}-${index}`}>
+                <Link href={item.url}>{item.title}</Link>
+                {/* 하위 목차가 있으면 자기 자신을 다시 호출! */}
+                {item.items && item.items.length > 0 && (
+                    <div className="flex flex-col">
+                        {renderTocItems(item.items, depth + 1)}
+                    </div>
+                )}
+            </div>
+        )
+    })
+}
+```
+
+여기에 `IntersectionObserver API`를 달아서 화면 스크롤 시 현재 위치한 제목을 감지해 왼쪽 선에 하이라이트가 들어오도록 만들었다.
+
+# 4. DB 없이 댓글창 달기 (Giscus)
+
+마지막으로 방문자와 소통할 수 있는 댓글 기능이다. DB나 서버를 구축하기엔 배보다 배꼽이 커질 것 같아, `GitHub Discussions`를 백엔드처럼 사용하는 `Giscus`를 도입했다.
+
+## 💡 깨알 팁 두 가지
+
+### 1. JSON 포매터 확장 프로그램 충돌
+
+처음 `Giscus`를 달았을 때, 예쁜 댓글창 대신 알 수 없는 초록색 바와 날것의 JSON 텍스트가 화면에 노출되는 기현상을 겪었다.
+알고 보니 내가 브라우저에 설치해 둔 **JSON Viewer 플러그인이 Giscus의 API 응답을 중간에 가로채서** 화면에 그려버린 것이었다.
+플러그인 설정에서 localhost를 예외 처리하니 깔끔하게 해결되었다.
+
+### 2. 최신순 정렬 설정 (giscus.json)
+
+`Giscus`의 기본 댓글 정렬은 '오래된 순'이다. 이를 '최신순(새로운 순)'으로 바꾸려면 프론트엔드 코드가 아니라, GitHub 저장소 최상단에 `giscus.json` 파일을 추가해야 한다.
+
+```json
+// giscus.json
+{
+  "defaultCommentOrder": "newest"
+}
+```
+
+저장소에 이 파일 하나만 툭 올려놓고 배포하면 Giscus가 알아서 읽어가서 최신순으로 렌더링해 준다. 정말 편리한 시스템이다.
+
+# 마무리
+
+시간을 쪼개고 쪼개서 드디어 기술 블로그다운 구색을 모두 갖추게 되었다!
+마이그레이션이나 단순 퍼블리싱 업무에 지쳐있던 요즘이었는데, 오랜만에 백지상태에서 아키텍처를 고민하고 에러를 잡아나가며 내가 원하는 대로 화면을 구성해 보니 새삼 '개발이 참 재밌는 거구나'를 느끼게 해 준 프로젝트였다.
+
+이제 남은 건 꾸준하게, 성실하게 이 공간을 나의 경험과 기록들로 채워나가는 일뿐이다. 사막화 되어가는 내 깃허브 잔디를 보며 다짐했듯, 앞으로는 나태해지지 말고 치열하게 기록해보자.
