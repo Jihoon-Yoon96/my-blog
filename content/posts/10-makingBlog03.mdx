@@ -48,6 +48,7 @@ rehypePlugins: [
 
 이후 `globals.css`에 CSS 변수(`--shiki-light-bg`, `--shiki-dark-bg`)를 교차 적용하도록 약간의 스타일 보정을 거치니, 에디터 부럽지 않은 깔끔한 코드 블록이 완성되었다.
 
+---
 
 ## 2. 다크모드 플로팅 버튼 추가
 요즘 웹사이트에 다크모드가 없으면 섭섭하다. 이미 세팅해 둔 `next-themes`를 활용해 우측 하단에 동동 플로팅 토글 버튼을 만들었다.
@@ -67,7 +68,9 @@ if (!mounted) return null
 // 이후 <Button> 렌더링...
 ```
 
-# 3. 목차 (Table of Contents)와 Scroll Spy 구현
+---
+
+## 3. 목차 (Table of Contents)와 Scroll Spy 구현
 글이 길어질수록 현재 내가 어디쯤 읽고 있는지 알려주는 내비게이션 역할이 필수적이다.
 `Velite`는 기본적으로 본문에서 TOC 데이터를 추출해 주는 기능(`s.toc()`)을 제공한다. 하지만 클릭 시 해당 섹션으로 이동하려면 제목 태그(`<h1>`, `<h2>`)에 고유한 id가 있어야 하므로 `rehype-slug` 플러그인을 추가로 연동했다.
 
@@ -107,19 +110,21 @@ const renderTocItems = (items: TocEntry[], depth = 1) => {
 
 여기에 `IntersectionObserver API`를 달아서 화면 스크롤 시 현재 위치한 제목을 감지해 왼쪽 선에 하이라이트가 들어오도록 만들었다.
 
-# 4. DB 없이 댓글창 달기 (Giscus)
+---
+
+## 4. DB 없이 댓글창 달기 (Giscus)
 
 마지막으로 방문자와 소통할 수 있는 댓글 기능이다. DB나 서버를 구축하기엔 배보다 배꼽이 커질 것 같아, `GitHub Discussions`를 백엔드처럼 사용하는 `Giscus`를 도입했다.
 
-## 💡 깨알 팁 두 가지
+### 💡 깨알 팁 두 가지
 
-### 1. JSON 포매터 확장 프로그램 충돌
+**1. JSON 포매터 확장 프로그램 충돌**
 
 처음 `Giscus`를 달았을 때, 예쁜 댓글창 대신 알 수 없는 초록색 바와 날것의 JSON 텍스트가 화면에 노출되는 기현상을 겪었다.
 알고 보니 내가 브라우저에 설치해 둔 **JSON Viewer 플러그인이 Giscus의 API 응답을 중간에 가로채서** 화면에 그려버린 것이었다.
 플러그인 설정에서 localhost를 예외 처리하니 깔끔하게 해결되었다.
 
-### 2. 최신순 정렬 설정 (giscus.json)
+**2. 최신순 정렬 설정 (giscus.json)**
 
 `Giscus`의 기본 댓글 정렬은 '오래된 순'이다. 이를 '최신순(새로운 순)'으로 바꾸려면 프론트엔드 코드가 아니라, GitHub 저장소 최상단에 `giscus.json` 파일을 추가해야 한다.
 
@@ -131,6 +136,42 @@ const renderTocItems = (items: TocEntry[], depth = 1) => {
 ```
 
 저장소에 이 파일 하나만 툭 올려놓고 배포하면 Giscus가 알아서 읽어가서 최신순으로 렌더링해 준다. 정말 편리한 시스템이다.
+
+---
+
+## 5. 동일 시리즈 글 모아보기
+
+시리즈로 기획된 글들의 경우, 독자가 이전 글이나 다음 글을 쉽게 찾아볼 수 있는 내비게이션이 필요했다. 상세 페이지 상단에 해당 시리즈의 전체 목록을 보여주되, 평소에는 본문을 가리지 않도록 **아코디언 UI**를 적용했다.
+
+### 💡 JavaScript 없는 인터랙션 구현
+복잡한 상태 관리(`useState`) 없이 성능을 최적화하기 위해 HTML5의 기본 태그인 `<details>`와 `<summary>`를 활용했다.
+
+1. **데이터 필터링**: Velite로 가져온 전체 게시글 중 현재 글과 동일한 `series` 이름을 가진 글들을 추출하고 날짜순으로 정렬했다.
+2. **조건부 렌더링**: 시리즈 데이터가 있는 경우에만 아코디언 바가 나타나도록 구성했다.
+3. **상태 스타일링**: Tailwind의 `group-open` 유틸리티를 사용해, 목록이 펼쳐졌을 때 버튼 텍스트가 자동으로 **"목록 보기"**에서 **"목록 닫기"**로 변경되도록 디테일을 살렸다.
+
+```tsx
+// src/app/posts/[slug]/page.tsx
+const seriesPosts = post.series
+    ? posts
+        .filter((p) => p.series === post.series)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    : []
+
+// JSX 영역
+<details className="group ...">
+    <summary className="...">
+        {/* 시리즈 제목 정보 */}
+        <div className="...">
+            <span className="group-open:hidden">목록 보기</span>
+            <span className="hidden group-open:inline">목록 닫기</span>
+        </div>
+    </summary>
+    {/* 펼쳐지는 시리즈 리스트 */}
+</details>
+```
+
+---
 
 # 마무리
 
