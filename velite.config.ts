@@ -1,5 +1,6 @@
 import { defineCollection, defineConfig, s } from 'velite'
 import rehypePrettyCode from 'rehype-pretty-code'
+import rehypeSlug from 'rehype-slug'
 
 // 블로그 글 스키마 정의
 const posts = defineCollection({
@@ -13,6 +14,7 @@ const posts = defineCollection({
         tags: s.array(s.string()),
         series: s.string().optional(), // 시리즈는 없을 수도 있음
         thumbnail: s.string().optional(), // 썸네일은 없을 수도 있음
+        toc: s.toc(), // 목차
         content: s.mdx(), // 본문 MDX
     }).transform(data => ({
         ...data,
@@ -33,6 +35,7 @@ export default defineConfig({
     collections: { posts },
     mdx: {
         rehypePlugins: [
+            rehypeSlug,
             [
                 rehypePrettyCode,
                 {

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import * as runtime from "react/jsx-runtime" // MDX 실행용
+import { TOC } from "@/components/post/TOC"
 
 // --- 1. MDX 렌더링 헬퍼 ---
 const useMDXComponent = (code: string) => {
@@ -128,17 +129,8 @@ export default async function PostDetail(props: PostPageProps) {
                     </article>
 
                     {/* 우측 사이드바 (TOC) - PC에서만 보임 */}
-                    <aside className="hidden lg:block">
-                        <div className="sticky top-24">
-                            <h4 className="font-semibold mb-4 text-sm flex items-center gap-2">
-                                On this page
-                            </h4>
-                            {/* 현재 Velite 설정에는 TOC 추출이 포함되어 있지 않습니다. */}
-                            {/* 추후 rehype-slug, rehype-autolink-headings 등을 추가하여 TOC 데이터를 생성해야 합니다. */}
-                            <div className="text-sm text-muted-foreground border-l border-border pl-4">
-                                목차 기능 준비 중...
-                            </div>
-                        </div>
+                    <aside className="hidden lg:block w-[240px] shrink-0">
+                        <TOC toc={post.toc} />
                     </aside>
 
                 </div>
