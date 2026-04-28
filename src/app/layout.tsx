@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
 import { SearchModal } from "@/components/layout/SearchModal";
 // import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -47,6 +48,8 @@ export default function RootLayout({
 
             {/* 여기에 나중에 <SearchModal /> 을 추가할 예정입니다 */}
             <SearchModal />
+
+            <ThemeToggle />
         </NextThemesProvider>
         </body>
         </html>
