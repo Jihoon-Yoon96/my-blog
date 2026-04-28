@@ -1,4 +1,5 @@
 import { defineCollection, defineConfig, s } from 'velite'
+import rehypePrettyCode from 'rehype-pretty-code'
 
 // 블로그 글 스키마 정의
 const posts = defineCollection({
@@ -31,7 +32,14 @@ export default defineConfig({
     },
     collections: { posts },
     mdx: {
-        rehypePlugins: [], // 나중에 코드 하이라이팅 플러그인 추가 예정
+        rehypePlugins: [
+            [
+                rehypePrettyCode,
+                {
+                    theme: 'github-dark', // 원하는 VS Code 테마를 지정 ('github-dark', 'one-dark-pro', 'dracula', 'material-theme' 등)
+                }
+            ]
+        ],
         remarkPlugins: [],
     },
 })
