@@ -8,6 +8,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import * as runtime from "react/jsx-runtime" // MDX 실행용
 import { TOC } from "@/components/post/TOC"
+import { Giscus } from "@/components/post/Giscus"
 
 // --- 1. MDX 렌더링 헬퍼 ---
 const useMDXComponent = (code: string) => {
@@ -122,9 +123,8 @@ export default async function PostDetail(props: PostPageProps) {
                             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
                                 <MessageSquare className="w-6 h-6" /> Comments
                             </h3>
-                            <div className="w-full h-40 rounded-xl border border-dashed border-border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                Giscus Comments Widget Area
-                            </div>
+                            {/* 여기에 Giscus 부착! */}
+                            <Giscus />
                         </div>
                     </article>
 
