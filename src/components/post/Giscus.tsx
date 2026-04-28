@@ -2,8 +2,8 @@
 // <script src="https://giscus.app/client.js"
 //         data-repo="jihoon-yoon96/my-blog"
 //         data-repo-id="R_kgDOQ2nEvQ"
-//         data-category="Announcements"
-//         data-category-id="DIC_kwDOQ2nEvc4C76BK"
+//         data-category="Blog-Comments"
+//         data-category-id="DIC_kwDOQ2nEvc4C76Hc"
 //         data-mapping="pathname"
 //         data-strict="0"
 //         data-reactions-enabled="1"
@@ -40,16 +40,16 @@ export function Giscus() {
                 id="comments"
                 repo="jihoon-yoon96/my-blog" // 👈 본인의 GitHub 저장소 이름으로 변경하세요
                 repoId="R_kgDOQ2nEvQ"        // 👈 Giscus 사이트에서 얻은 repo-id 입력
-                category="Comments"          // 👈 생성한 Discussions 카테고리 이름 (예: General)
-                categoryId="DIC_kwDOQ2nEvc4C76BK"// 👈 Giscus 사이트에서 얻은 category-id 입력
+                category="Blog-Comments"          // 👈 생성한 Discussions 카테고리 이름 (예: General)
+                categoryId="DIC_kwDOQ2nEvc4C76Hc"// 👈 Giscus 사이트에서 얻은 category-id 입력
                 mapping="pathname"           // 글의 URL을 기준으로 토론 스레드 생성
                 strict="0"
                 reactionsEnabled="1"         // 반응(좋아요 등) 활성화
                 emitMetadata="0"
-                inputPosition="bottom"       // 입력창 위치 (top 또는 bottom)
+                inputPosition="top"       // 입력창 위치 (top 또는 bottom)
                 theme={giscusTheme}          // 다크모드/라이트모드 자동 연동
                 lang="ko"                    // 한국어 설정
-                loading="lazy"
+                // loading="lazy"
             />
         </div>
     )
